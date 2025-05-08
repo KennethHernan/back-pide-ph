@@ -1,0 +1,150 @@
+import { env } from "../../config/environment.js";
+import { listOficinas, titularResponseDto } from "./dto/sunarp-dto.js";
+
+let myHeaders = new Headers();
+myHeaders.append("Content-Type", "application/json");
+
+export const consultTitularNatural = async (req, res) => {
+    try {
+        const { apellidoPaterno, apellidoMaterno, nombres } = req.body;
+
+        const PIDE = {
+            "usuario": env.USER_SUNARP,
+            "clave": env.PASS_SUNARP,
+            "tipoParticipante": "N",
+            "apellidoPaterno": apellidoPaterno,
+            "apellidoMaterno": apellidoMaterno,
+            "nombres": nombres
+        }
+
+        const requestOptions = {
+            method: 'POST',
+            headers: myHeaders,
+            body: JSON.stringify({ PIDE }),
+            redirect: 'follow'
+        };
+        const response = await fetch(env.PREDIO_SUNARP_URL, requestOptions)
+
+        if(!response.ok){
+            return res.status(response.status).json({
+                message: "Error en la consulta con el servicios de SUNARP"
+            })
+        }
+
+        const data = await response.json();
+        const titularidadDto = titularResponseDto(data);
+
+        res._json = titularidadDto;
+
+        return res.json(titularidadDto)
+    } catch (error) {
+        return res.json({
+            message: error.message
+        })
+    }
+}
+
+export const consultTitularJuridica = async (req, res) => {
+    try {
+        const { razonSocial } = req.body;
+
+        const PIDE = {
+            "usuario": env.USER_SUNARP,
+            "clave": env.PASS_SUNARP,
+            "tipoParticipante": "J",
+            "razonSocial": razonSocial
+        }
+
+        const raw = JSON.stringify({ PIDE });
+        const requestOptions = {
+            method: 'POST',
+            headers: myHeaders,
+            body: raw,
+            redirect: 'follow'
+        };
+        const response = await fetch(env.PREDIO_SUNARP_URL, requestOptions)
+
+        if(!response.ok){
+            return res.status(response.status).json({
+                message: "Error en la consulta con el servicios de SUNARP"
+            })
+        }
+
+        const data = await response.json();
+        const titularidadDto = titularResponseDto(data)
+
+        res._json = titularidadDto;
+
+        return res.json(titularidadDto)
+    } catch (error) {
+        return res.json({
+            message: error.message
+        })
+    }
+}
+
+export const getOficinas = async (req, res) => {
+    try {
+        const requestOptions = {
+            method: 'GET',
+            headers: myHeaders,
+        };
+
+        const response = await fetch(env.OFICINAS_SUNARP_URL, requestOptions)
+
+        if(!response.ok){
+            return res.status(response.status).json({
+                message: "Error en la consulta con el servicios de SUNARP"
+            })
+        }
+
+        const { oficina } = await response.json();
+        const oficinasDto = listOficinas(oficina.oficina);
+
+        res._json = oficinasDto;
+
+        return res.json(oficinasDto)
+    } catch (error) {
+        return res.json({
+            message: error.message
+        })
+    }
+}
+
+export const getPlacaVehicular = async (req, res) => {
+    try {
+        const { zona, oficina, placa } = req.body;
+        const PIDE = {
+            "usuario": env.USER_SUNARP,
+            "clave": env.PASS_SUNARP,
+            "zona": zona,
+            "oficina": oficina,
+            "placa": placa
+        }
+        const requestOptions = {
+            method: 'POST',
+            headers: myHeaders,
+            body: JSON.stringify({ PIDE })
+        };
+
+        const response = await fetch(env.PLACA_SUNARP_URL, requestOptions)
+
+        if(!response.ok){
+            return res.status(response.status).json({
+                message: "Error en la consulta con el servicios de SUNARP"
+            })
+        }
+
+        const { verDetalleRPVExtraResponse } = await response.json();
+
+        console.log("Resultado",verDetalleRPVExtraResponse)
+
+        res._body = verDetalleRPVExtraResponse.vehiculo
+
+        return res.json(verDetalleRPVExtraResponse.vehiculo)
+    } catch (error) {
+        return res.json({
+            message: error.message
+        })
+    }
+}
