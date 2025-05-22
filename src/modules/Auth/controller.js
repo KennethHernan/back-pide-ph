@@ -17,22 +17,6 @@ export const createUser = async (req, res) => { // rol añadido
     }
 }
 
-// Metodo - Bucar cambiar contraseña:
-export const changePassword = async (req, res) => {
-    try {
-        const { username, password } = req.body;
-        const objUser = await User.findOne({ username: { $regex: username, $options: "i" } });
-
-
-        if (!objUser) return res.status(404).json({ message: "Usuario no encontrado" });
-        objUser.password = password;
-        await objUser.save();
-        return res.status(200).json({ message: "Contraseña actualizada" });
-    } catch (error) {
-        return res.status(500).json({ error: error.message });
-    }
-}
-
 // Metodo - Cambiar toda DATA:
 export const changeAll = async (req, res) => {
     try {
@@ -44,6 +28,38 @@ export const changeAll = async (req, res) => {
         objUser.rol = rol;
         await objUser.save();
         return res.status(200).json({ message: "Datos Actualizados" });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
+
+// Metodo - Cambiar Usuario y/o Rol DATA:
+export const changeUserRol = async (req, res) => {
+    try {
+        const { id, username, rol } = req.body;
+        const objUser = await User.findById(id);        
+        console.log(JSON.stringify( objUser, null, 20));
+        if (!objUser) return res.status(404).json({ message: "Usuario no encontrado" });
+        objUser.username = username;
+        objUser.rol = rol;
+        await objUser.save();
+        return res.status(200).json({ message: "Datos Actualizados" });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
+
+// Metodo - Eliminar Usuario:
+export const deleteUser = async (req, res) => {
+    try {
+        const { id } = req.body;
+        const userDeleted = await User.findByIdAndDelete(id);
+
+        if (!userDeleted) {
+            return res.status(404).json({ message: "Usuario no encontrado" });
+        }
+
+        return res.status(200).json({ message: "Usuario eliminado correctamente" });
     } catch (error) {
         return res.status(500).json({ error: error.message });
     }
@@ -115,15 +131,9 @@ export const getAllUsers = async (req, res) => {
 
 export const verifyToken = async (req, res) => {
     try {
-        console.log("✔️ Endpoint '/verifyToken' fue llamado");
-        console.log("📦 req.body recibido:", req.body);
-
         const { token } = req.body;
         if (!token) return res.status(403).json({ message: "No existe el token" });
-
         const decoded = jwt.verify(token, env.jwt_secret);
-        console.log("🔑 Token decodificado:", decoded);
-
         const userFound = await User.findById(decoded.id);
         if (!userFound) return res.status(401).json({ message: "Usuario no encontrado" });
 
@@ -133,7 +143,6 @@ export const verifyToken = async (req, res) => {
         });
 
     } catch (error) {
-        console.error("❌ Error al verificar token:", error.message);
         return res.status(500).json({ error: error.message });
     }
 };
