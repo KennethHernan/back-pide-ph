@@ -5,10 +5,10 @@ import db from "./database.js"
 
 const server = http.createServer(app)
 
-server
-    .listen(env.PORT)
-    .on('listening', () => console.log(`http://192.168.2.14:${env.PORT}`))
-    .on('error', (error) => {
-        console.log(error)
-        process.exit(1)
-    })
+
+ .listen(env.PORT)
+  .on('listening', () => console.log(`http://localhost:${env.PORT}`))  // CAMBIAR A IP
+  .on('error', (error) => {
+    console.log(error);
+    process.exit(1);
+  });

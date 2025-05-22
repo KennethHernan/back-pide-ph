@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 const userSchema = new Schema({
     username: String,
     password: String,
+    rol: { type: Number, enum: [0, 1], required: true } // Añadido
 },{
     versionKey: false,
     timestamps: true,

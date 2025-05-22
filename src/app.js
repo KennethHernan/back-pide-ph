@@ -4,14 +4,16 @@ import morgan from "morgan";
 import reniecRoutes from "./modules/Reniec/reniec.routes.js"
 import sunarpRoutes from "./modules/Sunarp/sunarp.routes.js"
 import authRoutes from  "./modules/Auth/auth.routes.js"
+import cookieParser from "cookie-parser";
 
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser()) //añadido
 app.use(cors({
     origin: "*",
-    methods: ['GET', 'POST', 'OPTIONS'],
+    methods: ['GET', 'POST', 'OPTIONS', 'HEAD', 'CONNECT'],
 }));
 morgan.token('body', (req, res) => {
     if (res._body) {
