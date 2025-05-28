@@ -3,8 +3,12 @@ import bcrypt from "bcrypt";
 
 const userSchema = new Schema({
     username: String,
+    name: String,
+    dni: String,
     password: String,
-    rol: { type: Number, enum: [0, 1], required: true } // Añadido
+    rol: { type: Number, enum: [0, 1], required: true }, // Añadido
+    lastSeen: Date,
+    isOnline: Boolean
 },{
     versionKey: false,
     timestamps: true,
@@ -23,4 +27,15 @@ userSchema.methods.comparePassword = async function (password) {
     return await bcrypt.compare(password, this.password);
 }
 
-export default model("User", userSchema);
+
+export const User = model("User", userSchema);
+
+
+export const updateUserLastSeen = async (userId) => {
+  await User.findByIdAndUpdate(userId, {
+    lastSeen: new Date().toISOString(),
+    isOnline: true,
+  });
+};
+
+export default User;
