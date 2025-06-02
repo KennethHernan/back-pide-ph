@@ -2,30 +2,36 @@ import { User, updateUserLastSeen } from "./model/user.js";
 import jwt from "jsonwebtoken";
 import { createtoken } from "../../utils/createToken.js";
 import { env } from "../../config/environment.js";
+import crypto from "crypto";
+import { sendPasswordResetEmail } from "../../utils/mailer.js";
 
 // Metodo - Crear nuevo usuario
 export const createUser = async (req, res) => {
   // rol añadido
   try {
-    const { username, name, dni, password, rol } = req.body;
+    const { username, name, dni, password, email, rol } = req.body;
     const lastSeen = "";
     const isOnline = false;
 
     // Validaciones
     const existingUser = await User.findOne({ username });
-    if (existingUser) return res.status(201).json({ message: "El Usuario ya existe" });
+    if (existingUser)
+      return res.status(500).json({ message: "El Usuario ya existe" });
 
     const existingName = await User.findOne({ name });
-    if (existingName) return res.status(201).json({ message: "El Nombre ya existe" });
+    if (existingName)
+      return res.status(500).json({ message: "El Nombre ya existe" });
 
     const existingDni = await User.findOne({ dni });
-    if (existingDni) return res.status(201).json({ message: "El DNI ya existe" });
+    if (existingDni)
+      return res.status(500).json({ message: "El DNI ya existe" });
 
     const newUser = new User({
       username,
       name,
       dni,
       password,
+      email,
       rol,
       lastSeen,
       isOnline,
@@ -38,7 +44,6 @@ export const createUser = async (req, res) => {
     return res.status(500).json(error);
   }
 };
-
 // Metodo - Cambiar toda DATA:
 export const changeAll = async (req, res) => {
   try {
@@ -46,6 +51,7 @@ export const changeAll = async (req, res) => {
     const objUser = await User.findById(id);
     if (!objUser)
       return res.status(404).json({ message: "Usuario no encontrado" });
+
     objUser.username = username;
     objUser.password = password;
     objUser.rol = rol;
@@ -55,14 +61,15 @@ export const changeAll = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
-
 // Metodo - Cambiar Usuario y/o Rol DATA:
 export const changeUserRol = async (req, res) => {
   try {
     const { id, username, rol } = req.body;
+
     const objUser = await User.findById(id);
     if (!objUser)
       return res.status(404).json({ message: "Usuario no encontrado" });
+
     objUser.username = username;
     objUser.rol = rol;
     await objUser.save();
@@ -71,7 +78,6 @@ export const changeUserRol = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
-
 // Metodo - Eliminar Usuario:
 export const deleteUser = async (req, res) => {
   try {
@@ -87,7 +93,6 @@ export const deleteUser = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
-
 // Metodo - Iniciar Sesion:
 export const signin = async (req, res) => {
   try {
@@ -119,7 +124,6 @@ export const signin = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
-
 // Metodo - Listar usuario:
 export const getAllUsers = async (req, res) => {
   try {
@@ -129,7 +133,6 @@ export const getAllUsers = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 export const verifyToken = async (req, res) => {
   try {
     const { token } = req.body;
@@ -147,7 +150,6 @@ export const verifyToken = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
-
 // Metodo - Cerrar Sesion
 export const logout = async (req, res) => {
   try {
@@ -165,7 +167,6 @@ export const logout = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
-
 // Metodo - Modificar Online/Offline
 export const sendHeartbeat = async (req, res) => {
   const { userId } = req.body;
@@ -181,4 +182,37 @@ export const sendHeartbeat = async (req, res) => {
     console.error("Error en heartbeat:", error);
     res.status(500).json({ success: false, message: "Error interno" });
   }
+};
+
+export const requestPasswordReset = async (req, res) => {
+  const { name } = req.body;
+  const user = await User.findOne({ name });
+  if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+
+  const token = crypto.randomBytes(32).toString("hex");
+  user.resetToken = token;
+  user.resetTokenExpires = Date.now() + 3600000; // 1 hora
+  await user.save();
+
+  await sendPasswordResetEmail(user.username,user.email, token);
+  res.json({ message: "Correo enviado" });
+};
+
+export const resetPassword = async (req, res) => {
+  const { password, token } = req.body;
+
+  const user = await User.findOne({
+    resetToken: token,
+    resetTokenExpires: { $gt: Date.now() },
+  });
+
+  if (!user)
+    return res.status(400).json({ message: "Token inválido o expirado" });
+
+  user.password = password;
+  user.resetToken = undefined;
+  user.resetTokenExpires = undefined;
+  await user.save();
+
+  res.json({ message: "Contraseña actualizada" });
 };

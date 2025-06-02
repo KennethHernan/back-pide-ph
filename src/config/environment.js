@@ -16,5 +16,7 @@ export const env = {
     USER_SUNARP: process.env.USER_SUNARP,
     PASS_SUNARP: process.env.PASS_SUNARP,
     jwt_secret: process.env.jwt_secret,
-    DB_URI: process.env.DB_URI
+    DB_URI: process.env.DB_URI,
+    OUTLOOK_USER: process.env.OUTLOOK_USER,
+    OUTLOOK_PASS: process.env.OUTLOOK_PASS
 }
