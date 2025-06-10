@@ -10,7 +10,7 @@ const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser()) //añadido
+app.use(cookieParser())
 app.use(cors({
     origin: "*",
     methods: ['GET', 'POST', 'OPTIONS', 'HEAD', 'CONNECT'],
@@ -32,6 +32,17 @@ app.get("/", (req, res) => {
         message: "Bienvenido al servicio MDPH"
     })
 })
+
+app.post('/api/v1/user/disconnect', express.text(), (req, res) => {
+  try {
+    const userId = JSON.parse(req.body);
+    console.log(`Usuario desconectado: ${userId}`);
+    res.sendStatus(200);
+  } catch (error) {
+    console.error("Error al procesar desconexión:", error.message);
+    res.sendStatus(400);
+  }
+});
 
 
 export default app;

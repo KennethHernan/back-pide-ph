@@ -9,6 +9,7 @@ const userSchema = new Schema(
     password: { type: String, required: true },
     email: { type: String, required: true },
     rol: { type: Number, enum: [0, 1], required: true }, // Añadido
+    acceso: { type: Array, required: true }, // Añadido
     lastSeen: Date,
     isOnline: Boolean,
     resetToken: String,

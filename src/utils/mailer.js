@@ -18,7 +18,7 @@ export const sendPasswordResetEmail = async (username,to, token) => {
   await transporter.sendMail({
     from: '"Soporte Ufti MDPH" <'+(process.env.OUTLOOK_USER)+'>',
     to,
-    subject: '"Recupera tu contraseña: '+username+'"',
+    subject: 'Recupera tu contraseña: '+username+'',
     html: `<p>Haz clic aquí para restablecer tu contraseña:</p>
            <a href="${resetLink}">${resetLink}</a>`,
   });

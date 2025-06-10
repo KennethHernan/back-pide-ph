@@ -1,6 +1,18 @@
 import { env } from "../../config/environment.js";
 import { listOficinas, titularResponseDto } from "./dto/sunarp-dto.js";
 
+import { writeFile } from 'fs/promises';
+import { join } from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+console.log(__dirname)
+// Ruta completa al archivo
+const imagePath = join(__dirname+"\\img\\", 'imagen_descargada.jpg');
+
+
 let myHeaders = new Headers();
 myHeaders.append("Content-Type", "application/json");
 
@@ -47,7 +59,8 @@ export const consultTitularNatural = async (req, res) => {
 export const consultTitularJuridica = async (req, res) => {
     try {
         const { razonSocial } = req.body;
-
+        console.log("Sunarp: "+razonSocial);
+        
         const PIDE = {
             "usuario": env.USER_SUNARP,
             "clave": env.PASS_SUNARP,
@@ -62,6 +75,7 @@ export const consultTitularJuridica = async (req, res) => {
             body: raw,
             redirect: 'follow'
         };
+
         const response = await fetch(env.PREDIO_SUNARP_URL, requestOptions)
 
         if(!response.ok){
@@ -71,6 +85,7 @@ export const consultTitularJuridica = async (req, res) => {
         }
 
         const data = await response.json();
+
         const titularidadDto = titularResponseDto(data)
 
         res._json = titularidadDto;
@@ -143,6 +158,89 @@ export const getPlacaVehicular = async (req, res) => {
 
         return res.json(verDetalleRPVExtraResponse.vehiculo)
     } catch (error) {
+        return res.json({
+            message: error.message
+        })
+    }
+}
+
+export const getAsientos = async (req , res) => {
+    try {
+        const { zona, oficina, partida, registro } = req.body;
+        
+        const PIDE = {
+            "usuario": env.USER_SUNARP,
+            "clave": env.PASS_SUNARP,
+            "zona": zona,
+            "oficina": oficina,
+            "partida": partida,
+            "registro":"21000"
+        }
+        const requestOptions = {
+            method: 'POST',
+            headers: myHeaders,
+            body: JSON.stringify({ PIDE })
+        };
+
+        const response = await fetch(env.ASIENTOS_SUNARP_URL, requestOptions)
+
+        if(!response.ok){
+            return res.status(response.status).json({
+                message: "Error en la consulta con el servicios de SUNARP"
+            })
+        }
+
+        const data = await response.json();
+        console.log("data: ", data)
+        return res.json(data)
+    } catch (error) {
+        console.log(error)
+        return res.json({
+            message: error.message
+        })
+    }
+}
+
+export const downloadAsientos = async (req , res) => {
+    try {
+        const { transaccion, idImg, tipo, nroTotalPag, nroPagRef, pagina } = req.body;
+        
+        const PIDE = {
+            "usuario": env.USER_SUNARP,
+            "clave": env.PASS_SUNARP,
+            "transaccion":transaccion,
+            "idImg":idImg,
+            "tipo":tipo,
+            "nroTotalPag":nroTotalPag,
+            "nroPagRef":nroPagRef,
+            "pagina":pagina
+        }
+        const requestOptions = {
+            method: 'POST',
+            headers: myHeaders,
+            body: JSON.stringify({ PIDE })
+        };
+
+        const response = await fetch(env.DOCUMENT_SUNARP_URL, requestOptions)
+
+        if(!response.ok){
+            return res.status(response.status).json({
+                message: "Error en la consulta con el servicios de SUNARP"
+            })
+        }
+
+        const {verAsientoSIRSARPResponse} = await response.json();
+        console.log(verAsientoSIRSARPResponse.img)
+        const binaryData = Buffer.from(verAsientoSIRSARPResponse.img, 'base64');
+        await writeFile(imagePath, binaryData, 'binary');
+    // Establece las cabeceras de la respuesta para indicar que es una imagen JPEG
+        res.setHeader('Content-Type', 'image/jpeg');
+        res.setHeader('Content-Disposition', 'attachment; filename=imagen_descargada.jpg');
+
+    // Envía la imagen como respuesta
+        res.sendFile(imagePath);
+    } catch (error) {
+        console.log(error)
         return res.json({
             message: error.message
         })

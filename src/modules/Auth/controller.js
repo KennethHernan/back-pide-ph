@@ -9,7 +9,7 @@ import { sendPasswordResetEmail } from "../../utils/mailer.js";
 export const createUser = async (req, res) => {
   // rol añadido
   try {
-    const { username, name, dni, password, email, rol } = req.body;
+    const { username, name, dni, password, email, rol, acceso } = req.body;
     const lastSeen = "";
     const isOnline = false;
 
@@ -18,13 +18,14 @@ export const createUser = async (req, res) => {
     if (existingUser)
       return res.status(500).json({ message: "El Usuario ya existe" });
 
-    const existingName = await User.findOne({ name });
-    if (existingName)
-      return res.status(500).json({ message: "El Nombre ya existe" });
-
     const existingDni = await User.findOne({ dni });
     if (existingDni)
       return res.status(500).json({ message: "El DNI ya existe" });
+    
+    const existingName = await User.findOne({ name });
+    if (existingName)
+      return res.status(500).json({ message: "El Nombre Completo ya existe" });
+
 
     const newUser = new User({
       username,
@@ -33,6 +34,7 @@ export const createUser = async (req, res) => {
       password,
       email,
       rol,
+      acceso,
       lastSeen,
       isOnline,
     });
@@ -118,6 +120,7 @@ export const signin = async (req, res) => {
       id: userFound._id,
       username: userFound.username,
       rol: userFound.rol,
+      acceso: userFound.acceso,
       token,
     });
   } catch (error) {
@@ -133,6 +136,7 @@ export const getAllUsers = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+// Metodo - Verificar Token al logear
 export const verifyToken = async (req, res) => {
   try {
     const { token } = req.body;
@@ -154,7 +158,6 @@ export const verifyToken = async (req, res) => {
 export const logout = async (req, res) => {
   try {
     const { userId } = req.body;
-    console.log("Usuario cerró la pestaña: ", userId);
 
     if (userId) {
       await User.findByIdAndUpdate(userId, { isOnline: false });
@@ -183,7 +186,7 @@ export const sendHeartbeat = async (req, res) => {
     res.status(500).json({ success: false, message: "Error interno" });
   }
 };
-
+// Metodo - Enviar Correo
 export const requestPasswordReset = async (req, res) => {
   const { name } = req.body;
   const user = await User.findOne({ name });
@@ -194,10 +197,10 @@ export const requestPasswordReset = async (req, res) => {
   user.resetTokenExpires = Date.now() + 3600000; // 1 hora
   await user.save();
 
-  await sendPasswordResetEmail(user.username,user.email, token);
+  await sendPasswordResetEmail(user.username, user.email, token);
   res.json({ message: "Correo enviado" });
 };
-
+// Metodo - Cambiar Contraseña
 export const resetPassword = async (req, res) => {
   const { password, token } = req.body;
 
@@ -215,4 +218,16 @@ export const resetPassword = async (req, res) => {
   await user.save();
 
   res.json({ message: "Contraseña actualizada" });
+};
+
+// Metodo - buscar por id
+export const seachID = async (req, res) => {
+  const { userId } = req.params;
+  
+  try {
+    const userFound = await User.findById(userId).select("-_id -password -name -dni -email -lastSeen -isOnline -createdAt -updatedAt");;
+    res.status(200).json(userFound);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };

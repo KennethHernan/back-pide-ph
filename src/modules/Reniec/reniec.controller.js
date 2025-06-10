@@ -7,7 +7,7 @@ export const getDniInfo = async (req, res) => {
         const { dni } = req.params;
         const PIDE = {
             "nuDniConsulta": dni,
-            "nuDniUsuario": "74068095",
+            "nuDniUsuario": env.DNI_USER_RENIEC,
             "nuRucUsuario": env.RUC_USER_RENIEC,
             "password": env.PASS_USER_RENIEC
         }
