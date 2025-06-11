@@ -1,5 +1,5 @@
-import nodemailer from 'nodemailer';
-import dotenv from 'dotenv';
+import nodemailer from "nodemailer";
+import dotenv from "dotenv";
 dotenv.config();
 
 const transporter = nodemailer.createTransport({
@@ -12,16 +12,20 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export const sendPasswordResetEmail = async (username,to, token) => {
+//Modificar ruta ip en caso se cambie
+export const sendPasswordResetEmail = async (username, to, token) => {
   const resetLink = `http://localhost:5173/Xy20passw05/${token}`;
 
   await transporter.sendMail({
-    from: '"Soporte Ufti MDPH" <'+(process.env.OUTLOOK_USER)+'>',
+    from: '"Soporte Ufti MDPH" <' + process.env.OUTLOOK_USER + ">",
     to,
-    subject: 'Recupera tu contraseña: '+username+'',
-    html: `<p>Haz clic aquí para restablecer tu contraseña:</p>
-           <a href="${resetLink}">${resetLink}</a>`,
+    subject: `Recupera contraseña PIDE APP para el usuario: ${username}`,
+    html: `<p>Ingresa al siguiente enlace para restablecer la contraseña:</p>
+           <a href="${resetLink}">${resetLink}</a>
+           <br>
+           <p>Atentamente</p>
+           <p>Unidad Funcional de Tecnologias de la Informacion.</p>
+           `,
   });
   console.log("ENVIADO");
-  
 };

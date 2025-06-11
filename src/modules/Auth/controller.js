@@ -1,4 +1,5 @@
 import { User, updateUserLastSeen } from "./model/user.js";
+import Audit from "./model/audit.js";
 import jwt from "jsonwebtoken";
 import { createtoken } from "../../utils/createToken.js";
 import { env } from "../../config/environment.js";
@@ -21,11 +22,10 @@ export const createUser = async (req, res) => {
     const existingDni = await User.findOne({ dni });
     if (existingDni)
       return res.status(500).json({ message: "El DNI ya existe" });
-    
+
     const existingName = await User.findOne({ name });
     if (existingName)
       return res.status(500).json({ message: "El Nombre Completo ya existe" });
-
 
     const newUser = new User({
       username,
@@ -223,10 +223,56 @@ export const resetPassword = async (req, res) => {
 // Metodo - buscar por id
 export const seachID = async (req, res) => {
   const { userId } = req.params;
-  
+
   try {
-    const userFound = await User.findById(userId).select("-_id -password -name -dni -email -lastSeen -isOnline -createdAt -updatedAt");;
+    const userFound = await User.findById(userId).select(
+      "-_id -password -name -dni -email -lastSeen -isOnline -createdAt -updatedAt"
+    );
     res.status(200).json(userFound);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Metodo - Crear Audit
+export const createAudit = async (req, res) => {
+  try {
+    const { username, metodo } = req.body;
+
+    // Validacion
+    const existingUser = await User.findOne({ username });
+    if (!existingUser)
+      return res.status(500).json({ message: "El Usuario no existe" });
+
+    const newAudit = new Audit({
+      username,
+      metodo,
+    });
+    await newAudit.save();
+
+    res.status(201).json({
+      message: "Audit creado exitosamente",
+    });
+  } catch (error) {
+    return res.status(500).json(error);
+  }
+};
+
+// Metodo - Listar Audit
+export const getAllAudit = async (req, res) => {
+  try {
+    const audits = await Audit.find({});
+    res.status(200).json(audits);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+// Metodo - Consulta por usuario
+export const getAuditUser = async (req, res) => {
+  try {
+    const { username } = req.body;
+    const totalConsultas = await Audit.countDocuments({ username: username });
+    res.status(200).json(totalConsultas);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

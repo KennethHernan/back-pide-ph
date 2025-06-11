@@ -1,8 +1,9 @@
 import { Router } from "express";
-import { createUser,seachID, getAllUsers, signin, verifyToken, logout, changeAll, changeUserRol, deleteUser, sendHeartbeat, requestPasswordReset, resetPassword } from "./controller.js";
+import { createUser, createAudit,seachID, getAllUsers, signin, verifyToken, logout, changeAll, getAllAudit, changeUserRol, deleteUser, sendHeartbeat, requestPasswordReset, resetPassword } from "./controller.js";
 
 const router = Router()
 router.get("/getAllUsers", getAllUsers) // Añadido
+router.get("/getAllAudit", getAllAudit) // Añadido
 router.get("/getSeachId/:userId", seachID) // Añadido
 
 router.post("/changeAll", changeAll) // Añadido
@@ -13,6 +14,7 @@ router.post("/forgot-password", requestPasswordReset); // Añadido
 router.post("/reset-password", resetPassword); // Añadido
 
 router.post("/createUser", createUser)
+router.post("/createAudit", createAudit)
 router.post("/signin", signin)
 router.post("/verifyToken", verifyToken)
 router.post("/logout", logout)
