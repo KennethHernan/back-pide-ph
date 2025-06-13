@@ -7,7 +7,7 @@ const server = http.createServer(app)
 
 
  .listen(env.PORT)
-  .on('listening', () => console.log(`http://localhost:${env.PORT}`))  // CAMBIAR A IP
+  .on('listening', () => console.log(`http://${env.IP}:${env.PORT}`))
   .on('error', (error) => {
     console.log(error);
     process.exit(1);

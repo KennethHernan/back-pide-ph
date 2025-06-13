@@ -5,6 +5,7 @@ import { createtoken } from "../../utils/createToken.js";
 import { env } from "../../config/environment.js";
 import crypto from "crypto";
 import { sendPasswordResetEmail } from "../../utils/mailer.js";
+import dniReniec from "./model/dniReniec.js";
 
 // Metodo - Crear nuevo usuario
 export const createUser = async (req, res) => {
@@ -63,6 +64,23 @@ export const changeAll = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
+// Metodo - Cambiar DNI ADMIN:
+export const changeDniReniec = async (req, res) => {
+  try {
+    const { email, dni } = req.body;
+
+    const objUser = await dniReniec.findOne({email: email});
+    if (!objUser)
+      return res.status(404).json({ message: "Email no encontrado" });
+
+    objUser.dni = dni;
+
+    await objUser.save();
+    return res.status(200).json({ message: "DNI Actualizado" });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
 // Metodo - Cambiar Usuario y/o Rol DATA:
 export const changeUserRol = async (req, res) => {
   try {
@@ -91,6 +109,21 @@ export const deleteUser = async (req, res) => {
     }
 
     return res.status(200).json({ message: "Usuario eliminado correctamente" });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+// Metodo - Eliminar DNI RENIEC:
+export const deleteDniReniec = async (req, res) => {
+  try {
+    const { id } = req.body;
+    const userDeleted = await dniReniec.findByIdAndDelete(id);
+
+    if (!userDeleted) {
+      return res.status(404).json({ message: "Dato no encontrado" });
+    }
+
+    return res.status(200).json({ message: "Datos eliminado correctamente" });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -258,11 +291,45 @@ export const createAudit = async (req, res) => {
   }
 };
 
+// Metodo - Crear DNI Administrador (RENIEC)
+export const createDniReniec = async (req, res) => {
+  try {
+    const { email, dni } = req.body;
+
+    // Validacion
+    const existingEmail = await dniReniec.findOne({ email });
+    if (existingEmail)
+      return res.status(500).json({ message: "El Email ya existe" });
+
+    const newDniReniec = new dniReniec({
+      email,
+      dni,
+    });
+    await newDniReniec.save();
+
+    res.status(201).json({
+      message: "DNI administrador creado exitosamente",
+    });
+  } catch (error) {
+    return res.status(500).json(error);
+  }
+};
+
 // Metodo - Listar Audit
 export const getAllAudit = async (req, res) => {
   try {
     const audits = await Audit.find({});
     res.status(200).json(audits);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Metodo - Listar Audit
+export const getAllDniReniec = async (req, res) => {
+  try {
+    const dniRENIEC = await dniReniec.find({});
+    res.status(200).json(dniRENIEC);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

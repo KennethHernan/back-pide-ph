@@ -14,17 +14,17 @@ const transporter = nodemailer.createTransport({
 
 //Modificar ruta ip en caso se cambie
 export const sendPasswordResetEmail = async (username, to, token) => {
-  const resetLink = `http://localhost:5173/Xy20passw05/${token}`;
+  const resetLink = `http://${process.env.IP_FRONT}:${process.env.PORT_FRONT}/Xy20passw05/${token}`;
 
   await transporter.sendMail({
     from: '"Soporte Ufti MDPH" <' + process.env.OUTLOOK_USER + ">",
     to,
-    subject: `Recupera contraseña PIDE APP para el usuario: ${username}`,
-    html: `<p>Ingresa al siguiente enlace para restablecer la contraseña:</p>
+    subject: `${process.env.OUTLOOK_ASUNTO} ${username}`,
+    html: `<p>${process.env.OUTLOOK_TEXTO}</p>
            <a href="${resetLink}">${resetLink}</a>
            <br>
            <p>Atentamente</p>
-           <p>Unidad Funcional de Tecnologias de la Informacion.</p>
+           <p>${process.env.OUTLOOK_ATENTAMENTE}</p>
            `,
   });
   console.log("ENVIADO");

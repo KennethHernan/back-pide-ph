@@ -3,6 +3,9 @@ config()
 
 export const env = {
     PORT: process.env.PORT,
+    IP: process.env.IP,
+    PORT_FRONT: process.env.PORT_FRONT,
+    IP_FRONT: process.env.IP_FRONT,
     API_DNI_URL: process.env.API_DNI_URL,
     DNI_RENIEC_URL: process.env.DNI_RENIEC_URL,
     PREDIO_SUNARP_URL: process.env.PREDIO_SUNARP_URL,
@@ -18,5 +21,8 @@ export const env = {
     jwt_secret: process.env.jwt_secret,
     DB_URI: process.env.DB_URI,
     OUTLOOK_USER: process.env.OUTLOOK_USER,
-    OUTLOOK_PASS: process.env.OUTLOOK_PASS
+    OUTLOOK_PASS: process.env.OUTLOOK_PASS,
+    OUTLOOK_ASUNTO: process.env.OUTLOOK_ASUNTO,
+    OUTLOOK_TEXTO: process.env.OUTLOOK_TEXTO,
+    OUTLOOK_ATENTAMENTE: process.env.OUTLOOK_ATENTAMENTE
 }
