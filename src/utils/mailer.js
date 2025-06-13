@@ -15,17 +15,24 @@ const transporter = nodemailer.createTransport({
 //Modificar ruta ip en caso se cambie
 export const sendPasswordResetEmail = async (username, to, token) => {
   const resetLink = `http://${process.env.IP_FRONT}:${process.env.PORT_FRONT}/Xy20passw05/${token}`;
+  const asunto = process.env.OUTLOOK_ASUNTO;
+  const texto = process.env.OUTLOOK_TEXTO;
+  const atentamente = process.env.OUTLOOK_ATENTAMENTE;
 
   await transporter.sendMail({
     from: '"Soporte Ufti MDPH" <' + process.env.OUTLOOK_USER + ">",
     to,
-    subject: `${process.env.OUTLOOK_ASUNTO} ${username}`,
-    html: `<p>${process.env.OUTLOOK_TEXTO}</p>
+    subject: `${asunto} ${username}`,
+    html: `<p>${texto}</p>
            <a href="${resetLink}">${resetLink}</a>
            <br>
-           <p>Atentamente</p>
-           <p>${process.env.OUTLOOK_ATENTAMENTE}</p>
+           <p>Atentamente</p> 
+           <p>${atentamente}</p>
            `,
   });
-  console.log("ENVIADO");
+  console.log("-----------------------------------------------------------------------");
+  console.log(`EMAIL DE RECUPERACION ENVIADO A: ${to}`);
+  console.log("-----------------------------------------------------------------------");
+  console.log("");
+  
 };

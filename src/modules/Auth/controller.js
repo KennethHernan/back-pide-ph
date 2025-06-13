@@ -50,7 +50,7 @@ export const createUser = async (req, res) => {
 // Metodo - Cambiar toda DATA:
 export const changeAll = async (req, res) => {
   try {
-    const { id, username, password, rol } = req.body;
+    const { id, username, password, rol, acceso } = req.body;
     const objUser = await User.findById(id);
     if (!objUser)
       return res.status(404).json({ message: "Usuario no encontrado" });
@@ -58,6 +58,7 @@ export const changeAll = async (req, res) => {
     objUser.username = username;
     objUser.password = password;
     objUser.rol = rol;
+    objUser.acceso = acceso;
     await objUser.save();
     return res.status(200).json({ message: "Datos Actualizados" });
   } catch (error) {
@@ -84,7 +85,7 @@ export const changeDniReniec = async (req, res) => {
 // Metodo - Cambiar Usuario y/o Rol DATA:
 export const changeUserRol = async (req, res) => {
   try {
-    const { id, username, rol } = req.body;
+    const { id, username, rol, acceso } = req.body;
 
     const objUser = await User.findById(id);
     if (!objUser)
@@ -92,6 +93,7 @@ export const changeUserRol = async (req, res) => {
 
     objUser.username = username;
     objUser.rol = rol;
+    objUser.acceso = acceso;
     await objUser.save();
     return res.status(200).json({ message: "Datos Actualizados" });
   } catch (error) {
