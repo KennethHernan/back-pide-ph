@@ -5,7 +5,6 @@ import { writeFile } from "fs/promises";
 import { join } from "path";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
-import path from "path";
 
 
 const __filename = fileURLToPath(import.meta.url);

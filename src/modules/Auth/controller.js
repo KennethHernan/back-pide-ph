@@ -1,5 +1,7 @@
 import { User, updateUserLastSeen } from "./model/user.js";
 import Audit from "./model/audit.js";
+import Service from "./model/service.js";
+
 import jwt from "jsonwebtoken";
 import { createtoken } from "../../utils/createToken.js";
 import { env } from "../../config/environment.js";
@@ -316,7 +318,6 @@ export const createDniReniec = async (req, res) => {
     return res.status(500).json(error);
   }
 };
-
 // Metodo - Listar Audit
 export const getAllAudit = async (req, res) => {
   try {
@@ -342,6 +343,62 @@ export const getAuditUser = async (req, res) => {
     const { username } = req.body;
     const totalConsultas = await Audit.countDocuments({ username: username });
     res.status(200).json(totalConsultas);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+// Metodo - Verificar PIDE
+export const verifyPide = async (req, res) => {
+  try {
+    const { servicio } = req.body;
+    if (!servicio) return res.status(403).json({ message: "No existe Servicio" });
+
+    const existingService = await User.findOne({ servicio });
+    if (!existingService)
+      return res.status(401).json({ message: "Servicio no encontrado" });
+
+    return res.json({
+      value: existingService.active
+    });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+// Metodo - Crear Service PIDE
+export const createService = async (req, res) => {
+console.log(JSON.stringify( req.body, null, 20));
+
+  try {
+    const { service, active } = req.body;
+    
+    // Validacion
+    const existingService = await Service.findOne({ service });
+    if (existingService)
+      return res.status(500).json({ message: "El Servicio ya existe" });
+
+    const newService = new Service({
+      service,
+      active,
+    });
+
+    console.log(newService);
+    
+    await newService.save();
+
+    res.status(201).json({
+      message: "Servicio creado exitosamente",
+    });
+  } catch (error) {
+    return res.status(500).json(error);
+  }
+};
+
+// Metodo - Listar Services
+export const getAllService = async (req, res) => {
+  try {
+    const servicePIDE = await Service.find({});
+    res.status(200).json(servicePIDE);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
